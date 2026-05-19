@@ -115,18 +115,20 @@ export default async function setupRoutes(fastify: FastifyInstance) {
 
       const { dek } = parsed.data;
 
-      // Check if a canary row exists and validate the DEK against it
+      // Check if a canary row exists and validate the DEK against it.
+      // Cast to bytea in the SELECT so the column comes back as a Buffer:
+      // reading it as a string and re-binding with ::bytea mangles the
+      // ciphertext, so even the SAME DEK fails on every restart.
       try {
-        const canaryRows = await db.execute<{ encrypted_value: string }>(
-          sql`SELECT encrypted_value FROM dek_canary WHERE id = 1`,
+        const canaryRows = await db.execute<{ encrypted_value: Buffer }>(
+          sql`SELECT encrypted_value::bytea AS encrypted_value FROM dek_canary WHERE id = 1`,
         );
 
         if (canaryRows.length > 0) {
-          // Canary exists — validate the DEK against it
-          const encryptedValue = canaryRows[0].encrypted_value;
+          const encryptedBytes = canaryRows[0].encrypted_value;
           try {
             const decryptResult = await db.execute<{ plaintext: string }>(
-              sql`SELECT pgp_sym_decrypt(${encryptedValue}::bytea, ${dek}) AS plaintext`,
+              sql`SELECT pgp_sym_decrypt(${encryptedBytes}, ${dek}) AS plaintext`,
             );
             const plaintext = decryptResult[0]?.plaintext;
             if (plaintext !== 'safecare') {
