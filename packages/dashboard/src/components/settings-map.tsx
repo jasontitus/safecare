@@ -1,7 +1,7 @@
 "use client";
 
 import { MapContainer, TileLayer, useMapEvents, useMap } from "react-leaflet";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 import { resolveDashboardTileUrlTemplate } from "@/lib/api-base";
 
@@ -38,19 +38,26 @@ function BoundsTracker({
 }: {
   onBoundsChange: (bounds: SettingsMapBounds, zoom: number, center: { lat: number; lng: number }) => void;
 }) {
+  // Hold the latest callback in a ref. Callers pass a fresh inline function each
+  // render; if the seed-on-mount effect depended on `onBoundsChange`, every
+  // emitBounds → parent setState → new callback identity → effect re-fired,
+  // producing "Maximum update depth exceeded."
+  const cbRef = useRef(onBoundsChange);
+  useEffect(() => {
+    cbRef.current = onBoundsChange;
+  }, [onBoundsChange]);
+
   const map = useMapEvents({
     moveend() {
-      emitBounds(map, onBoundsChange);
+      emitBounds(map, cbRef.current);
     },
   });
 
   // Seed bounds immediately on mount so the parent's `bounds` state is non-null
-  // even if the user never pans/zooms. Without this, the gating button on the
-  // setup wizard stays disabled until the first moveend, which is a common
-  // "stuck at the map step" trap when tiles are blank on a fresh install.
+  // even if the user never pans/zooms.
   useEffect(() => {
-    emitBounds(map, onBoundsChange);
-  }, [map, onBoundsChange]);
+    emitBounds(map, cbRef.current);
+  }, [map]);
 
   return null;
 }
@@ -67,13 +74,17 @@ function RecenterMap({
   onBoundsChange: (bounds: SettingsMapBounds, zoom: number, center: { lat: number; lng: number }) => void;
 }) {
   const map = useMap();
+  const cbRef = useRef(onBoundsChange);
+  useEffect(() => {
+    cbRef.current = onBoundsChange;
+  }, [onBoundsChange]);
 
   useEffect(() => {
     map.setView([lat, lng], zoom, { animate: true });
-    // Emit bounds synchronously too — setView fires moveend on real moves,
-    // but a no-op (same view) won't, leaving stale bounds.
-    emitBounds(map, onBoundsChange);
-  }, [lat, lng, zoom, map, onBoundsChange]);
+    // setView fires moveend on real moves, but a no-op (same view) won't —
+    // emit synchronously so the parent's bounds stay in sync with lat/lng/zoom.
+    emitBounds(map, cbRef.current);
+  }, [lat, lng, zoom, map]);
 
   return null;
 }

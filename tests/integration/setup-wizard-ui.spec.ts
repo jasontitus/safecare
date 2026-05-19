@@ -37,6 +37,19 @@ test.describe("Setup wizard UI", () => {
     const adminPassword = "wizardsmoke123";
     const orgName = "Wizard UI Smoke Test";
 
+    // Catch React error messages — guards against the BoundsTracker /
+    // RecenterMap infinite re-render loop, where each emitBounds call would
+    // setState in the parent, change onBoundsChange identity, re-fire the
+    // effect, and surface "Maximum update depth exceeded" in the console.
+    const reactErrors: string[] = [];
+    page.on("console", (msg) => {
+      if (msg.type() !== "error") return;
+      const text = msg.text();
+      if (text.includes("Maximum update depth") || text.includes("Too many re-renders")) {
+        reactErrors.push(text);
+      }
+    });
+
     await page.goto(DASHBOARD);
     await page.waitForLoadState("networkidle");
     await dismissUnlockIfPresent(page);
@@ -78,5 +91,7 @@ test.describe("Setup wizard UI", () => {
       | undefined;
     expect(steps?.adminCreated).toBe(true);
     expect(steps?.operatingRegionSet).toBe(true);
+
+    expect(reactErrors, `React infinite-render errors: ${reactErrors.join(" | ")}`).toEqual([]);
   });
 });

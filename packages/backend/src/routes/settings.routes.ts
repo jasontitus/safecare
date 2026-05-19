@@ -362,8 +362,17 @@ export default async function settingsRoutes(fastify: FastifyInstance) {
           } catch (err) {
             fastify.log.error(err, 'Pre-built download failed, falling back to local');
             // Fall through to local processing
-            downloadPbf(pbfUrl, downloadLabel, bounds, fastify.log).catch((e) => {
+            downloadPbf(pbfUrl, downloadLabel, bounds, fastify.log).catch(async (e) => {
+              const message = e instanceof Error ? e.message : 'Local fallback failed';
               fastify.log.error(e, 'Local fallback also failed');
+              await redis.set(
+                PROVISION_STATUS_KEY,
+                JSON.stringify({
+                  status: 'error',
+                  state: downloadLabel,
+                  message,
+                }),
+              );
             });
           }
         })();
@@ -489,8 +498,17 @@ export default async function settingsRoutes(fastify: FastifyInstance) {
           data: { region: downloadLabel, method: 'local', url: pbfUrl },
         });
 
-        downloadPbf(pbfUrl, downloadLabel, bounds, fastify.log).catch((err) => {
+        downloadPbf(pbfUrl, downloadLabel, bounds, fastify.log).catch(async (err) => {
+          const message = err instanceof Error ? err.message : 'Map provisioning failed';
           fastify.log.error(err, 'Map provisioning download failed');
+          await redis.set(
+            PROVISION_STATUS_KEY,
+            JSON.stringify({
+              status: 'error',
+              state: downloadLabel,
+              message,
+            }),
+          );
         });
       }
     },
