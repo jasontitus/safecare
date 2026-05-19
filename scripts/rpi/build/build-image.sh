@@ -171,7 +171,18 @@ if [ -n "$IMG_FILE" ]; then
   if [[ "$IMG_FILE" == *.zip ]]; then
     log "Extracting .img from zip..."
     unzip -o "$IMG_FILE" -d "$OUTPUT_DIR/"
-    RAW_IMG=$(find "$OUTPUT_DIR" -name "*.img" | head -1)
+    # Pick the .img file from inside *this* zip, not whatever .img happens to
+    # be lying around in OUTPUT_DIR from a previous build — find without a
+    # sort would otherwise return whichever directory order surfaces first.
+    INNER_IMG=$(unzip -Z1 "$IMG_FILE" | grep -E '\.img$' | head -1)
+    if [ -n "$INNER_IMG" ] && [ -f "$OUTPUT_DIR/$INNER_IMG" ]; then
+      RAW_IMG="$OUTPUT_DIR/$INNER_IMG"
+    else
+      # Fall back to newest .img by mtime so a one-off rename inside the zip
+      # still yields the freshly-extracted file rather than a stale one.
+      RAW_IMG=$(find "$OUTPUT_DIR" -maxdepth 1 -name "*.img" -type f -exec stat -f "%m %N" {} \; \
+        | sort -nr | head -1 | cut -d' ' -f2-)
+    fi
   else
     RAW_IMG="$IMG_FILE"
   fi
