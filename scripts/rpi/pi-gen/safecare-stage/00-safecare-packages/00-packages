@@ -17,6 +17,8 @@ avahi-daemon
 avahi-utils
 hostapd
 dnsmasq
+rfkill
+psmisc
 docker.io
 docker-compose
 python3-flask
