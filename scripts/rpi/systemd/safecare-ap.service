@@ -7,11 +7,18 @@ After=network.target
 Type=forking
 ExecStartPre=/usr/sbin/rfkill unblock wifi
 ExecStartPre=/usr/sbin/ip link set wlan0 up
-ExecStartPre=/usr/sbin/ip addr add 10.42.0.1/24 dev wlan0
+# Use `addr replace` instead of `addr add` so a restart after a dirty
+# stop (or a manual systemctl start after the captive portal handoff)
+# doesn't fail with "File exists" on the stale 10.42.0.1.
+ExecStartPre=/usr/sbin/ip addr replace 10.42.0.1/24 dev wlan0
 ExecStart=/usr/sbin/hostapd -B /opt/safecare/scripts/rpi/config/hostapd.conf
 ExecStartPost=/usr/sbin/dnsmasq --conf-file=/opt/safecare/scripts/rpi/config/dnsmasq.conf
-ExecStop=/usr/bin/killall dnsmasq
-ExecStopPost=/usr/bin/killall hostapd
+# Leading `-` ignores nonzero exit so a missing dnsmasq/hostapd doesn't
+# taint the unit's stop status. Flushing the IP at stop time also lets
+# NetworkManager take over wlan0 cleanly when nmcli connects.
+ExecStop=-/usr/bin/killall dnsmasq
+ExecStopPost=-/usr/bin/killall hostapd
+ExecStopPost=-/usr/sbin/ip addr flush dev wlan0
 Restart=on-failure
 RestartSec=3
 

@@ -1,8 +1,12 @@
 [Unit]
 Description=SafeCare Provisioning Captive Portal
 ConditionPathExists=!/opt/safecare/.provisioned
+# Order: start after the AP, but use Wants= (not Requires=) so that when
+# the provisioner deliberately stops safecare-ap to hand wlan0 over to
+# nmcli, systemd doesn't cascade-stop the provisioner itself and kill
+# the in-flight worker thread mid-connect.
 After=safecare-ap.service
-Requires=safecare-ap.service
+Wants=safecare-ap.service
 
 [Service]
 Type=simple
