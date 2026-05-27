@@ -123,6 +123,11 @@ async function pollWifiStatus() {
           if (data.status === 'failed') {
             document.getElementById('wifi-transition').style.display = 'none';
             document.querySelector('.card').style.display = 'block';
+            // Re-open the modal so the error message inside it becomes
+            // visible. Without this, the user sees the network list
+            // reappear with no explanation — looks like the UI just
+            // "spun back" to picking a network.
+            document.getElementById('wifi-modal').style.display = 'flex';
             document.getElementById('wifi-error').textContent = data.error || 'Connection failed. Try again.';
             document.getElementById('wifi-error').style.display = 'block';
             document.getElementById('wifi-connecting').style.display = 'none';
