@@ -46,6 +46,14 @@ app.config["DOCKER_STATUS"] = "idle"
 
 # ---- Captive portal detection -------------------------------------------
 
+def _next_step_after_wifi():
+    """Where to send a re-entering user once the WiFi step has succeeded.
+    Without this, anyone who lands on /welcome or /wifi after the Pi has
+    already joined the home network gets sent back through the WiFi
+    picker — making it look like the captive portal is stuck in a loop."""
+    return "/password"
+
+
 @app.route("/generate_204")
 @app.route("/hotspot-detect.html")
 @app.route("/connecttest.txt")
@@ -55,6 +63,8 @@ app.config["DOCKER_STATUS"] = "idle"
 def captive_detect():
     if RECOVERY_MODE:
         return redirect("/wifi-recovery", code=302)
+    if app.config.get("WIFI_STATUS") == "connected":
+        return redirect(_next_step_after_wifi(), code=302)
     return redirect("/welcome", code=302)
 
 
@@ -64,11 +74,15 @@ def captive_detect():
 def index():
     if RECOVERY_MODE:
         return redirect("/wifi-recovery")
+    if app.config.get("WIFI_STATUS") == "connected":
+        return redirect(_next_step_after_wifi())
     return redirect("/welcome")
 
 
 @app.route("/welcome")
 def welcome():
+    if app.config.get("WIFI_STATUS") == "connected":
+        return redirect(_next_step_after_wifi())
     return render_template("welcome.html")
 
 
@@ -79,6 +93,8 @@ def wifi_recovery_page():
 
 @app.route("/wifi")
 def wifi_page():
+    if app.config.get("WIFI_STATUS") == "connected":
+        return redirect(_next_step_after_wifi())
     return render_template("wifi.html")
 
 
@@ -316,6 +332,13 @@ def docker_status():
 
 def _connect_wifi(ssid, password):
     try:
+        # Give the captive portal UI a few seconds to render the
+        # "what happens next" screen on the user's phone before we
+        # yank wlan0 out from under them. Without this delay the AP
+        # goes down while the user is still staring at the password
+        # modal, so they never see where to find the Pi after handoff.
+        time.sleep(8)
+
         if not RECOVERY_MODE:
             subprocess.run(["systemctl", "stop", "safecare-ap"], timeout=10,
                            capture_output=True)
