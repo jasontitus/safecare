@@ -29,19 +29,29 @@ const mockUpdateSet = vi.fn((vals: any) => {
 });
 const mockUpdate = vi.fn(() => ({ set: mockUpdateSet }));
 
+// Chainable, thenable select mock. Drizzle query builders are awaited at
+// arbitrary points in the chain (`.from()`, `.where().orderBy()`,
+// `.leftJoin().where().orderBy()`, `.where().groupBy()`), so the mock must
+// support method chaining AND resolve to `dbSelectResults` whenever it is
+// awaited or iterated. A naive mock that returns the array from `.where()`
+// breaks as soon as the service appends another builder method.
+function makeSelectChain(): any {
+  const chain: any = {
+    from: () => chain,
+    where: () => chain,
+    orderBy: () => chain,
+    leftJoin: () => chain,
+    innerJoin: () => chain,
+    groupBy: () => chain,
+    limit: () => chain,
+    then: (resolve: (v: any) => any) => resolve(dbSelectResults),
+    [Symbol.iterator]: () => dbSelectResults[Symbol.iterator](),
+  };
+  return chain;
+}
+// Kept for backwards compatibility with tests that tweak grouped results.
 const mockGroupBy = vi.fn(() => []);
-const mockSelectWhere = vi.fn(() => dbSelectResults);
-const mockSelectOrderBy = vi.fn(() => dbSelectResults);
-const mockSelectFrom = vi.fn(() => ({
-  where: mockSelectWhere,
-  orderBy: mockSelectOrderBy,
-  leftJoin: vi.fn(() => ({
-    where: mockSelectWhere,
-    orderBy: mockSelectOrderBy,
-  })),
-  groupBy: mockGroupBy,
-}));
-const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
+const mockSelect = vi.fn(() => makeSelectChain());
 
 const mockDeleteWhere = vi.fn(() => Promise.resolve());
 const mockDelete = vi.fn(() => ({ where: mockDeleteWhere }));

@@ -116,6 +116,7 @@ Last updated: 2026-03-30
 | Input sanitization utilities | Done | constantTimeEquals (HMAC-based), sanitizePlainText, normalizePhone |
 | Key rotation tooling | Done | Interactive rotate-keys.sh script for DEK re-encryption |
 | Remote access documentation | Done | docs/REMOTE-ACCESS.md — Tailscale/Cloudflare deployment patterns |
+| Unit tests for security.ts | Done | 22 tests for constantTimeEquals, sanitizePlainText, normalizePhone, normalizeCommunicationPreference, redactPhone |
 | Remote wipe via push notification | Not done | |
 
 ## Infrastructure
@@ -132,7 +133,7 @@ Last updated: 2026-03-30
 | Suite | Tests | File |
 |-------|-------|------|
 | PWA Unit Tests | 62 | packages/pwa/src/\_\_tests\_\_/ (crypto, db, api, sync, hooks) |
-| Backend Unit Tests | 136 | packages/backend/src/\_\_tests\_\_/ (auth, dispatch, session-key, middleware, routing, tiles, etc.) |
+| Backend Unit Tests | 199 | packages/backend/src/\_\_tests\_\_/ (auth, dispatch, session-key, middleware, routing, tiles, referral, ride, security, etc.) |
 | E2E Smoke | 35 | tests/e2e-smoke.sh |
 | Security Verification | 32 | tests/security-verify.sh |
 | Fresh Install (Playwright) | 10 | tests/integration/fresh-install.spec.ts |
@@ -176,5 +177,4 @@ All user-facing strings translated to 6 languages. Language selectable in Settin
 | Tailscale / tunnel networking | High | Recommended deployment documented in docs/REMOTE-ACCESS.md. Admin should stay private; public host should expose only driver + webhook paths. |
 | Route variation | Medium | Same driver gets same route pattern every time. |
 | Push notification remote wipe | Medium | Current wipe uses polling. Push would be instant even with app backgrounded. |
-| Unit tests for security.ts | Medium | 5 security utility functions have no unit tests (constantTimeEquals, sanitizePlainText, normalizePhone, etc.) |
 | Team gamification | Low | Fun team names for morale. |

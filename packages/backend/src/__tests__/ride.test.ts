@@ -27,11 +27,16 @@ const mockUpdate = vi.fn(() => ({ set: mockUpdateSet }));
 const mockSelectLimit = vi.fn(() => dbSelectResults);
 const mockSelectOrderBy = vi.fn(() => ({ limit: mockSelectLimit }));
 const mockSelectWhere = vi.fn(() => dbSelectResults);
-const mockSelectFrom = vi.fn(() => ({
+// Default `.from()` behaviour. Several tests override this with
+// `mockSelectFrom.mockImplementation(...)` to simulate sequential queries.
+// `vi.clearAllMocks()` does NOT restore implementations, so beforeEach must
+// re-apply this default or the override leaks into later tests.
+const defaultSelectFrom = () => ({
   where: mockSelectWhere,
   orderBy: mockSelectOrderBy,
   leftJoin: vi.fn(() => ({ where: mockSelectWhere })),
-}));
+});
+const mockSelectFrom = vi.fn(defaultSelectFrom);
 const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
 
 vi.mock('../db/index.js', () => ({
@@ -73,6 +78,9 @@ describe('RideService — Shift Lifecycle', () => {
   beforeEach(() => {
     service = new RideService();
     vi.clearAllMocks();
+    // Restore the default `.from()` implementation — clearAllMocks resets call
+    // history but keeps any mockImplementation overrides from prior tests.
+    mockSelectFrom.mockImplementation(defaultSelectFrom);
     dbInsertValues = [];
     dbUpdateSets = [];
     dbSelectResults = [];
