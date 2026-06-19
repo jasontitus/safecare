@@ -168,6 +168,8 @@ Monthly operating cost: $0 (Signal + WhatsApp) to ~$6/mo (adding Twilio SMS).
 - **[docs/CLOUD-PROVISIONING.md](docs/CLOUD-PROVISIONING.md)** — Map provisioning architecture
 - **[docs/REMOTE-ACCESS.md](docs/REMOTE-ACCESS.md)** — Recommended Tailscale / Cloudflare deployment patterns
 - **[STATUS.md](STATUS.md)** — Implementation progress against the phased plan
+- **[CHANGELOG.md](CHANGELOG.md)** — Release history
+- **[docs/RELEASING.md](docs/RELEASING.md)** — Release runbook (version bump, tag, Pi image, website)
 - **[tests/README.md](tests/README.md)** — Test suite documentation
 - **[PLAN.md](PLAN.md)** — Product plan, security architecture, phased roadmap
 - **[SPEC.md](SPEC.md)** — Product specification
