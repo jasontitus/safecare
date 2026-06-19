@@ -8,7 +8,7 @@
     "redirects": [
       {
         "source": "/download",
-        "destination": "https://storage.googleapis.com/safecare-maps-osrm/images/safecare-v0.4.6.img.xz",
+        "destination": "https://storage.googleapis.com/safecare-maps-osrm/images/safecare-v0.4.7.img.xz",
         "type": 302
       },
       {
