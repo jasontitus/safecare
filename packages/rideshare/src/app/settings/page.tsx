@@ -31,7 +31,7 @@ export default function SettingsPage() {
               This rideshare dashboard provides focused views for:
             </p>
             <ul className="list-disc list-inside space-y-1">
-              <li>Today's asks — unified ride + escort feed</li>
+              <li>Today&apos;s asks — unified ride + escort feed</li>
               <li>Shift board — week-ahead view with claim management</li>
               <li>Ride schedules — recurring templates with auto-generation</li>
               <li>Intake queue — multi-channel request processing</li>
@@ -50,12 +50,12 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              The referral directory replaces "does anyone know a
-              vet/attorney/mechanic" messages in large Signal and WhatsApp groups.
+              The referral directory replaces &quot;does anyone know a
+              vet/attorney/mechanic&quot; messages in large Signal and WhatsApp groups.
             </p>
             <ul className="list-disc list-inside space-y-1">
               <li>Any admin can add a provider (auto-vouches as creator)</li>
-              <li>Providers need 2+ vouches to become "active" and appear in search</li>
+              <li>Providers need 2+ vouches to become &quot;active&quot; and appear in search</li>
               <li>Three vouch levels: personally used, trusted referral, community known</li>
               <li>Search by category, neighborhood, language, and specialty</li>
               <li>All provider PII (name, phone, email, address) is encrypted at rest</li>

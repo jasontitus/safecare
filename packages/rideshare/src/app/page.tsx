@@ -104,7 +104,7 @@ export default function TodaysAsksPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Today's Asks</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Today&apos;s Asks</h1>
         <p className="text-muted-foreground mt-1">
           Rides, transit escorts, and referral requests — everything that needs attention today.
         </p>
@@ -131,7 +131,7 @@ export default function TodaysAsksPage() {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Today's Shift Board</h2>
+        <h2 className="text-xl font-semibold">Today&apos;s Shift Board</h2>
 
         {loading ? (
           <div className="space-y-3">
